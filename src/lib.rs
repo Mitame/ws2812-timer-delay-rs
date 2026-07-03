@@ -12,12 +12,9 @@
 
 use embedded_hal as hal;
 
-use crate::hal::digital::v2::OutputPin;
-use crate::hal::timer::{CountDown, Periodic};
+use crate::hal::delay::DelayNs;
+use crate::hal::digital::OutputPin;
 use smart_leds_trait::{SmartLedsWrite, RGB8};
-
-use nb;
-use nb::block;
 
 pub struct Ws2812<TIMER, PIN> {
     timer: TIMER,
@@ -26,7 +23,7 @@ pub struct Ws2812<TIMER, PIN> {
 
 impl<TIMER, PIN> Ws2812<TIMER, PIN>
 where
-    TIMER: CountDown + Periodic,
+    TIMER: DelayNs,
     PIN: OutputPin,
 {
     /// The timer has to already run at with a frequency of 3 MHz
@@ -40,17 +37,17 @@ where
     fn write_byte(&mut self, mut data: u8) {
         for _ in 0..8 {
             if (data & 0x80) != 0 {
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
                 self.pin.set_high().ok();
-                block!(self.timer.wait()).ok();
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
+                self.timer.delay_ns(333);
                 self.pin.set_low().ok();
             } else {
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
                 self.pin.set_high().ok();
                 self.pin.set_low().ok();
-                block!(self.timer.wait()).ok();
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
+                self.timer.delay_ns(333);
             }
             data <<= 1;
         }
@@ -61,17 +58,17 @@ where
     fn write_byte(&mut self, mut data: u8) {
         for _ in 0..8 {
             if (data & 0x80) != 0 {
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
                 self.pin.set_high().ok();
-                block!(self.timer.wait()).ok();
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
+                self.timer.delay_ns(333);
                 self.pin.set_low().ok();
             } else {
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
                 self.pin.set_high().ok();
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
                 self.pin.set_low().ok();
-                block!(self.timer.wait()).ok();
+                self.timer.delay_ns(333);
             }
             data <<= 1;
         }
@@ -80,7 +77,7 @@ where
 
 impl<TIMER, PIN> SmartLedsWrite for Ws2812<TIMER, PIN>
 where
-    TIMER: CountDown + Periodic,
+    TIMER: DelayNs,
     PIN: OutputPin,
 {
     type Error = ();
@@ -99,7 +96,7 @@ where
         }
         // Get a timeout period of 300 ns
         for _ in 0..900 {
-            block!(self.timer.wait()).ok();
+            self.timer.delay_ns(333);
         }
         Ok(())
     }
