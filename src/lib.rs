@@ -37,17 +37,15 @@ where
     fn write_byte(&mut self, mut data: u8) {
         for _ in 0..8 {
             if (data & 0x80) != 0 {
-                self.timer.delay_ns(333);
                 self.pin.set_high().ok();
-                self.timer.delay_ns(333);
-                self.timer.delay_ns(333);
+                self.timer.delay_ns(700);
                 self.pin.set_low().ok();
+                self.timer.delay_ns(600);
             } else {
-                self.timer.delay_ns(333);
                 self.pin.set_high().ok();
+                self.timer.delay_ns(350);
                 self.pin.set_low().ok();
-                self.timer.delay_ns(333);
-                self.timer.delay_ns(333);
+                self.timer.delay_ns(800);
             }
             data <<= 1;
         }
@@ -94,10 +92,8 @@ where
             self.write_byte(item.r);
             self.write_byte(item.b);
         }
-        // Get a timeout period of 300 ns
-        for _ in 0..900 {
-            self.timer.delay_ns(333);
-        }
+        // Get a timeout period of 50 us
+        self.timer.delay_us(50);
         Ok(())
     }
 }
